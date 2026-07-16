@@ -1,0 +1,7 @@
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/rvmi-targets.cmake")
+if(NOT TARGET rvmi::rvmi)
+    message(FATAL_ERROR "rvmi::rvmi target not found in rvmi-config.cmake")
+endif()
