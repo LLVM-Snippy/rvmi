@@ -7,15 +7,19 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_program(BASH_EXECUTABLE bash REQUIRED)
 execute_process(
   COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/get-api-version.sh
-  OUTPUT_VARIABLE TEST_MODEL_MAJOR_VERSION
+  OUTPUT_VARIABLE RVMI_MAJOR_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
 
 project(
-  testgen-model-interface
+  rvmi
   LANGUAGES C CXX
-  VERSION ${TEST_MODEL_MAJOR_VERSION})
+  VERSION ${RVMI_MAJOR_VERSION})
 
-message(STATUS "testgen-model-interface: PROJECT_VERSION: ${PROJECT_VERSION}")
+option(BUILD_DOCS "Build Doxygen documentation" OFF)
+
+message(STATUS "RVMI_MAJOR_VERSION: ${PROJECT_VERSION}")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 add_library(rvmi STATIC src/RVM.cpp)
 target_include_directories(rvmi PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
@@ -49,8 +53,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/testgen-model-interface-launcher
 install(DIRECTORY tests/rvm/asm tests/rvm/expected tests/rvm/ld
         DESTINATION ${CMAKE_INSTALL_DATADIR}/testgen-model-interface/rvm)
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/rvmi.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/rvmi.pc" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/rvmi.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+include(gen-pkgconf)
 
 write_basic_package_version_file(rvmi-config-version.cmake COMPATIBILITY SameMinorVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rvmi-config-version.cmake
@@ -75,9 +78,12 @@ include(CTest)
 
 if(BUILD_TESTING)
   enable_testing()
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
   add_subdirectory(tests)
-  message(STATUS "testgen-model-interface: enabling tests")
+  message(STATUS "rvmi: enabling tests")
 else()
-  message(STATUS "testgen-model-interface: disabling tests")
+  message(STATUS "rvmi: disabling tests")
+endif()
+
+if(BUILD_DOCS)
+  add_subdirectory(docs)
 endif()

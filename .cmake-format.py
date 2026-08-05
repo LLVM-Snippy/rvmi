@@ -1,6 +1,6 @@
 # type: ignore
 # pylint: skip-file
-
+# fmt: off
 with section("format"):
     line_width = 100
 

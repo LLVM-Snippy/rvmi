@@ -1,0 +1,8 @@
+libdir=@RVMI_PKGCONF_LIBDIR@
+includedir=@RVMI_PKGCONF_INCLUDEDIR@
+
+Name: rvmi
+Description: RISC-V model interface
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lrvmi
+Cflags: -I${includedir}
