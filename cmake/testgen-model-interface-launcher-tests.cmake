@@ -22,8 +22,8 @@ function(build_test)
       message(SEND_ERROR "CLANG_TOOLCHAIN_PATH must be specified for clang compiler")
     endif()
     set(COMPILER "${CLANG_TOOLCHAIN_PATH}/bin/clang")
-    set(EXTRA_COMPILER_ARGS
-        "--gcc-toolchain=${GCC_TOOLCHAIN_PATH} -target riscv${BITS}-unknown-elf")
+    set(EXTRA_COMPILER_ARGS "--gcc-toolchain=${GCC_TOOLCHAIN_PATH}" "-target"
+                            "riscv${BITS}-unknown-elf")
   else()
     set(COMPILER "${GCC_TOOLCHAIN_PATH}/bin/riscv64-unknown-elf-gcc")
   endif()
@@ -34,7 +34,8 @@ function(build_test)
             -T${LD_SCRIPT} -static ${TestOpt_ASM_FILE} -o ${TEST_ELF}
     DEPENDS ${TestOpt_ASM_FILE} ${LD_SCRIPT}
     WORKING_DIRECTORY ${TEST_DIR}
-    COMMENT "Building ${TEST_ELF}")
+    COMMENT "Building ${TEST_ELF}"
+    VERBATIM COMMAND_EXPAND_LISTS)
 endfunction()
 
 function(add_model_test)

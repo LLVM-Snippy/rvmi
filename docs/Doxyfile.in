@@ -4,8 +4,8 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "testgen-model-interface"
-PROJECT_NUMBER         = v@TEST_MODEL_MAJOR_VERSION@
+PROJECT_NAME           = "rvmi"
+PROJECT_NUMBER         = v@RVMI_MAJOR_VERSION@
 PROJECT_BRIEF          =
 PROJECT_LOGO           =
 PROJECT_ICON           =
