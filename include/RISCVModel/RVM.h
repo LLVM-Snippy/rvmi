@@ -20,11 +20,7 @@ extern "C" {
 #if defined(__has_c_attribute)
 #if __has_c_attribute(nodiscard)
 #define RVM_NODISCARD [[nodiscard]]
-#define RVM_NODISCARD_ENUM [[nodiscard]]
 #endif
-#endif
-#if !defined(RVM_NODISCARD_ENUM)
-#define RVM_NODISCARD_ENUM
 #endif
 #if !defined(RVM_NODISCARD)
 #if defined(__GNUC__) || defined(__clang__)
@@ -285,7 +281,7 @@ typedef enum {
 } RVMStopMode;
 
 /** @brief Execution status enum */
-typedef enum RVM_NODISCARD_ENUM {
+typedef enum {
   RVM_STEP_SUCCESS,   /**<  Simulator stepped successfully, no additional event
                       happened */
   RVM_STEP_FINISH,    /**< Simulator got ebreak or instruction with "StopPC" */
@@ -293,7 +289,7 @@ typedef enum RVM_NODISCARD_ENUM {
 } RVMSimExecStatus;
 
 /** @brief Error codes enum */
-typedef enum RVM_NODISCARD_ENUM {
+typedef enum {
   RVM_ERRC_SUCCESS = 0,        /**< No errors occurred */
   RVM_ERRC_INVALID_ARGUMENT,   /**< One or several of the arguments were invalid
                                 */
@@ -413,6 +409,7 @@ const RVMConfig *rvm_getModelConfig(const RVMState *State);
  * condition was met. @ref RVM_STEP_EXCEPTION if exception or interrupt
  * occurred.
  */
+RVM_NODISCARD
 RVMSimExecStatus rvm_executeInstr(RVMState *State);
 
 /**

@@ -210,8 +210,8 @@ void StateUpdate::clear() {
   GPR.clear();
   FPR.clear();
   VReg.clear();
-  PC = kUnitializedValue;
-  FCSR = kUnitializedValue;
+  PC = kUninitializedValue;
+  FCSR = kUninitializedValue;
 }
 
 void memReadCallback(RVMCallbackHandler *handler, uint64_t Addr,
@@ -286,7 +286,7 @@ ExecutionLogger::ExecutionLogger(const std::string &ExecLogPath) {
     return;
   OS = std::ofstream(ExecLogPath);
   if (!OS.is_open())
-    throw std::runtime_error(std::string("could not open exectution log: ") +
+    throw std::runtime_error(std::string("could not open execution log: ") +
                              ExecLogPath + "\n");
 
   OS << "{\n";
