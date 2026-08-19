@@ -43,7 +43,7 @@ namespace {
 
 template <SimOptions n> std::string simOpt2Str() {
   assert(!"unknown option specified");
-  throw std::runtime_error("unknwon option specified");
+  throw std::runtime_error("unknown option specified");
 };
 
 #define RVM_OPTION_DESC(EN, STR, IS_FLAG)                                      \
@@ -146,7 +146,7 @@ const rvm::RVM_FunctionPointers &loadModelLibrary(const DriverOptions &Options);
 std::string dumpState(rvm::State &RVM);
 
 struct StateUpdate {
-  // TODO: we can optimize memory managment by introducing dedicated cache
+  // TODO: we can optimize memory management by introducing dedicated cache
   struct MemStateType {
     uint64_t Addr;
     std::vector<unsigned char> Data;
@@ -169,7 +169,7 @@ struct StateUpdate {
   void clear();
 };
 
-constexpr auto kUnitializedValue = std::numeric_limits<uint64_t>::max();
+constexpr auto kUninitializedValue = std::numeric_limits<uint64_t>::max();
 
 class ExecutionLogger {
 public:
@@ -188,8 +188,8 @@ public:
   void addCSRUpdate(RVMCSR Reg);
 
 private:
-  uint64_t PCBefore = kUnitializedValue;
-  uint64_t FCSRBefore = kUnitializedValue;
+  uint64_t PCBefore = kUninitializedValue;
+  uint64_t FCSRBefore = kUninitializedValue;
   StateUpdate Update;
   std::ofstream OS;
 };

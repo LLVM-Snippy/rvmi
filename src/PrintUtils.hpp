@@ -1,6 +1,6 @@
 #pragma once
 
-// common routines for printing auxiliary infromation
+// common routines for printing auxiliary information
 
 #include <iomanip>
 #include <sstream>
