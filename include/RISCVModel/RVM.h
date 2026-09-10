@@ -16,7 +16,7 @@ extern "C" {
 
 #define RVMAPI_ENTRY_POINT_SYMBOL RVMVTable
 #define RVMAPI_VERSION_SYMBOL RVMInterfaceVersion
-#define RVMAPI_CURRENT_INTERFACE_VERSION 35u
+#define RVMAPI_CURRENT_INTERFACE_VERSION 36u
 #if defined(__has_c_attribute)
 #if __has_c_attribute(nodiscard)
 #define RVM_NODISCARD [[nodiscard]]
@@ -152,6 +152,7 @@ typedef enum {
   MACRO(RVM_ZEXT_BKX, bkx)                                                     \
   MACRO(RVM_ZEXT_PN, pn)                                                       \
   MACRO(RVM_ZEXT_PSFOPERAND, psfoperand)                                       \
+  MACRO(RVM_ZEXT_VFBFA, vfbfa)                                                 \
   MACRO(RVM_ZEXT_VFBFMIN, vfbfmin)                                             \
   MACRO(RVM_ZEXT_VFBFWMA, vfbfwma)                                             \
   MACRO(RVM_ZEXT_VFH, vfh)                                                     \
