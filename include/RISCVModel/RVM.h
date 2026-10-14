@@ -183,7 +183,17 @@ typedef enum {
   MACRO(RVM_ZEXT_KS, ks)                                                       \
   MACRO(RVM_ZEXT_K, k)                                                         \
   MACRO(RVM_ZEXT_KT, kt)                                                       \
-  MACRO(RVM_ZEXT_MMUL, mmul)
+  MACRO(RVM_ZEXT_MMUL, mmul)                                                   \
+  MACRO(RVM_ZEXT_IBI, ibi)                                                     \
+  MACRO(RVM_ZEXT_C64B, c64b)                                                   \
+  MACRO(RVM_ZEXT_ICCAMOA, iccamoa)                                             \
+  MACRO(RVM_ZEXT_ICCAMOC, iccamoc)                                             \
+  MACRO(RVM_ZEXT_ICCIF, iccif)                                                 \
+  MACRO(RVM_ZEXT_ICCLSM, icclsm)                                               \
+  MACRO(RVM_ZEXT_ICCRSE, iccrse)                                               \
+  MACRO(RVM_ZEXT_VABD, vabd)                                                   \
+  MACRO(RVM_ZEXT_A64RS, a64rs)                                                 \
+  MACRO(RVM_ZEXT_A128RS, a128rs)
 #endif
 
 typedef enum {
@@ -913,9 +923,11 @@ struct RVMConfig {
   int RV64;
   /** @brief VLEN used by vector extensions (if any) */
   unsigned VLEN;
-  /** @brief Whether or not to trap on misaligned access (essentially the same
-   * as Zicclsm and should be deleted when we add it to the
-   * @ref RVMZExt enum)
+  /** @brief Whether or not to trap on misaligned access.
+   *
+   * Deprecated in favor of RVM_ZEXT_ICCLSM.
+   * If RVM_ZEXT_ICCLSM is not enabled, but this flag is true, the model
+   * should treat it as RVM_ZEXT_ICCLSM being enabled.
    */
   int EnableMisalignedAccess;
   /** @brief StopMode to be used by implementation
