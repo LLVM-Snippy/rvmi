@@ -3,10 +3,11 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+using ::testing::HasSubstr;
+using ::testing::Not;
 TEST(RISCVModelUnitTest, CreateIsaStringExtBasic) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_I] = true;
   auto rv64 =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ false);
@@ -22,9 +23,7 @@ TEST(RISCVModelUnitTest, CreateIsaStringExtBasic) {
 }
 
 TEST(RISCVModelUnitTest, CreateIsaStringExtG) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_G] = true;
   auto rv64 =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ false);
@@ -32,9 +31,7 @@ TEST(RISCVModelUnitTest, CreateIsaStringExtG) {
 }
 
 TEST(RISCVModelUnitTest, CreateIsaStringExtBits) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_G] = true;
   Ext.ZExt[RVM_ZEXT_BA] = true;
   Ext.ZExt[RVM_ZEXT_BB] = true;
@@ -46,9 +43,7 @@ TEST(RISCVModelUnitTest, CreateIsaStringExtBits) {
 }
 
 TEST(RISCVModelUnitTest, CreateIsaStringExtBitmanip) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_G] = true;
   Ext.ZExt[RVM_ZEXT_BITMANIP] = true;
   auto Isa =
@@ -57,9 +52,7 @@ TEST(RISCVModelUnitTest, CreateIsaStringExtBitmanip) {
 }
 
 TEST(RISCVModelUnitTest, CreateIsaStringExtVkn) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_I] = true;
   Ext.ZExt[RVM_ZEXT_VKN] = true;
   Ext.ZExt[RVM_ZEXT_VKN] = true;
@@ -69,9 +62,7 @@ TEST(RISCVModelUnitTest, CreateIsaStringExtVkn) {
 }
 
 TEST(RISCVModelUnitTest, NormalizeExtensions) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_G] = true;
   Ext.MisaExt[RVM_MISA_J];
   Ext.ZExt[RVM_ZEXT_KN] = true;
@@ -122,9 +113,7 @@ TEST(RISCVModelUnitTest, NormalizeExtensions) {
 
 #define SET_MISA_TRUE(Name, name) MisaExt[Name] = true;
 TEST(RISCVModelUnitTest, FOR_EACH_ENUM_MISA) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &MisaExt = Ext.MisaExt;
   RVM_FOR_EACH_MISA_EXT(SET_MISA_TRUE);
   EXPECT_TRUE(std::all_of(MisaExt, MisaExt + RVM_MISA_NUMBER,
@@ -133,9 +122,7 @@ TEST(RISCVModelUnitTest, FOR_EACH_ENUM_MISA) {
 
 #define SET_ZEXT_TRUE(Name, name) ZExt[Name] = true;
 TEST(RISCVModelUnitTest, FOR_EACH_ENUM_ZEXT) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &ZExt = Ext.ZExt;
   RVM_FOR_EACH_ZEXT(SET_ZEXT_TRUE);
   EXPECT_TRUE(std::all_of(ZExt, ZExt + RVM_ZEXT_NUMBER,
@@ -144,19 +131,24 @@ TEST(RISCVModelUnitTest, FOR_EACH_ENUM_ZEXT) {
 
 #define SET_XEXT_TRUE(Name, name) XExt[Name] = true;
 TEST(RISCVModelUnitTest, FOR_EACH_ENUM_XEXT) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &XExt = Ext.XExt;
   RVM_FOR_EACH_XEXT(SET_XEXT_TRUE);
   EXPECT_TRUE(std::all_of(XExt, XExt + RVM_XEXT_NUMBER,
                           [](auto E) -> bool { return E; }));
 }
 
+#define SET_SEXT_TRUE(Name, name) SExt[Name] = true;
+TEST(RISCVModelUnitTest, FOR_EACH_ENUM_SEXT) {
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
+  auto &SExt = Ext.SExt;
+  RVM_FOR_EACH_SEXT(SET_SEXT_TRUE);
+  EXPECT_TRUE(std::all_of(SExt, SExt + RVM_SEXT_NUMBER,
+                          [](auto E) -> bool { return E; }));
+}
+
 TEST(RISCVModelUnitTest, ZIExtensions) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &ZExt = Ext.ZExt;
   ZExt[RVM_ZEXT_ICOND] = true;
   ZExt[RVM_ZEXT_ICBOM] = true;
@@ -172,39 +164,35 @@ TEST(RISCVModelUnitTest, ZIExtensions) {
   ZExt[RVM_ZEXT_ICFILP] = true;
   auto Isa =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ true);
-  EXPECT_NE(Isa.find("zicond"), std::string::npos);
-  EXPECT_NE(Isa.find("zicbom"), std::string::npos);
-  EXPECT_NE(Isa.find("zicboz"), std::string::npos);
-  EXPECT_NE(Isa.find("zicntr"), std::string::npos);
-  EXPECT_NE(Isa.find("zicbop"), std::string::npos);
-  EXPECT_NE(Isa.find("zimop"), std::string::npos);
-  EXPECT_NE(Isa.find("zilsd"), std::string::npos);
-  EXPECT_NE(Isa.find("zihpm"), std::string::npos);
-  EXPECT_NE(Isa.find("zihintntl"), std::string::npos);
-  EXPECT_NE(Isa.find("zihintpause"), std::string::npos);
-  EXPECT_NE(Isa.find("zicfiss"), std::string::npos);
-  EXPECT_NE(Isa.find("zicfilp"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("zicond"));
+  EXPECT_THAT(Isa, HasSubstr("zicbom"));
+  EXPECT_THAT(Isa, HasSubstr("zicboz"));
+  EXPECT_THAT(Isa, HasSubstr("zicntr"));
+  EXPECT_THAT(Isa, HasSubstr("zicbop"));
+  EXPECT_THAT(Isa, HasSubstr("zimop"));
+  EXPECT_THAT(Isa, HasSubstr("zilsd"));
+  EXPECT_THAT(Isa, HasSubstr("zihpm"));
+  EXPECT_THAT(Isa, HasSubstr("zihintntl"));
+  EXPECT_THAT(Isa, HasSubstr("zihintpause"));
+  EXPECT_THAT(Isa, HasSubstr("zicfiss"));
+  EXPECT_THAT(Isa, HasSubstr("zicfilp"));
 }
 
 TEST(RISCVModelUnitTest, AtomicExtensions) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &ZExt = Ext.ZExt;
   ZExt[RVM_ZEXT_AAMO] = true;
   ZExt[RVM_ZEXT_ABHA] = true;
   ZExt[RVM_ZEXT_ACAS] = true;
   auto Isa =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ true);
-  EXPECT_NE(Isa.find("zaamo"), std::string::npos);
-  EXPECT_NE(Isa.find("zabha"), std::string::npos);
-  EXPECT_NE(Isa.find("zacas"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("zaamo"));
+  EXPECT_THAT(Isa, HasSubstr("zabha"));
+  EXPECT_THAT(Isa, HasSubstr("zacas"));
 }
 
 TEST(RISCVModelUnitTest, FloatExtensions) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &ZExt = Ext.ZExt;
   ZExt[RVM_ZEXT_FA] = true;
   ZExt[RVM_ZEXT_FBFMIN] = true;
@@ -219,60 +207,52 @@ TEST(RISCVModelUnitTest, FloatExtensions) {
   ZExt[RVM_ZEXT_VFHMIN] = true;
   auto Isa =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ true);
-  EXPECT_NE(Isa.find("zfa"), std::string::npos);
-  EXPECT_NE(Isa.find("zfbfmin"), std::string::npos);
-  EXPECT_NE(Isa.find("zfh"), std::string::npos);
-  EXPECT_NE(Isa.find("zfhmin"), std::string::npos);
-  EXPECT_NE(Isa.find("zdinx"), std::string::npos);
-  EXPECT_NE(Isa.find("zhinx"), std::string::npos);
-  EXPECT_NE(Isa.find("zhinxmin"), std::string::npos);
-  EXPECT_NE(Isa.find("zvfbfmin"), std::string::npos);
-  EXPECT_NE(Isa.find("zvfbfwma"), std::string::npos);
-  EXPECT_NE(Isa.find("zvfh"), std::string::npos);
-  EXPECT_NE(Isa.find("zvfhmin"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("zfa"));
+  EXPECT_THAT(Isa, HasSubstr("zfbfmin"));
+  EXPECT_THAT(Isa, HasSubstr("zfh"));
+  EXPECT_THAT(Isa, HasSubstr("zfhmin"));
+  EXPECT_THAT(Isa, HasSubstr("zdinx"));
+  EXPECT_THAT(Isa, HasSubstr("zhinx"));
+  EXPECT_THAT(Isa, HasSubstr("zhinxmin"));
+  EXPECT_THAT(Isa, HasSubstr("zvfbfmin"));
+  EXPECT_THAT(Isa, HasSubstr("zvfbfwma"));
+  EXPECT_THAT(Isa, HasSubstr("zvfh"));
+  EXPECT_THAT(Isa, HasSubstr("zvfhmin"));
 }
 
 TEST(RISCVModelUnitTest, CompressedExtensions) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &ZExt = Ext.ZExt;
   ZExt[RVM_ZEXT_CMP] = true;
   ZExt[RVM_ZEXT_CMT] = true;
   auto Isa =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ true);
-  EXPECT_NE(Isa.find("zcmp"), std::string::npos);
-  EXPECT_NE(Isa.find("zcmt"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("zcmp"));
+  EXPECT_THAT(Isa, HasSubstr("zcmt"));
 }
 
 TEST(RISCVModelUnitTest, Cmop) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &ZExt = Ext.ZExt;
   ZExt[RVM_ZEXT_CMOP] = true;
   ZExt[RVM_ZEXT_ICFISS] = true;
   auto Isa =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ true);
-  EXPECT_NE(Isa.find("zcmop"), std::string::npos);
-  EXPECT_NE(Isa.find("zicfiss"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("zcmop"));
+  EXPECT_THAT(Isa, HasSubstr("zicfiss"));
 }
 
 TEST(RISCVModelUnitTest, Rv64_Xempty) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   auto &XExt = Ext.XExt;
   XExt[RVM_XEXT_EMPTY] = true;
   auto Isa =
       rvm::create_isa_string(Ext, /* IsRV64 */ true, /* Lowercase */ true);
-  EXPECT_NE(Isa.find("xempty"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("xempty"));
 }
 
 TEST(RISCVModelUnitTest, CompressedSubset) {
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
   Ext.MisaExt[RVM_MISA_I] = true;
   // Zc* v1.0.4-2 spec 1.5
   // MISA.C is set if the following extensions are selected:
@@ -280,13 +260,13 @@ TEST(RISCVModelUnitTest, CompressedSubset) {
   auto &ZExt = Ext.ZExt;
   ZExt[RVM_ZEXT_CA] = true;
   auto Isa = rvm::create_isa_string(Ext, /*IsRV64*/ true, /*Lowercase*/ true);
-  EXPECT_NE(Isa.find("rv64ic"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("rv64ic"));
   // Zca, Zcf and F is specified (RV32 only)
   ZExt[RVM_ZEXT_CA] = true;
   ZExt[RVM_ZEXT_CF] = true;
   Ext.MisaExt[RVM_MISA_F] = true;
   Isa = rvm::create_isa_string(Ext, /*IsRV64*/ false, /*Lowercase*/ true);
-  EXPECT_NE(Isa.find("rv32ifc"), std::string::npos) << Isa << '\n';
+  EXPECT_THAT(Isa, HasSubstr("rv32ifc"));
   // - Zca, Zcf and Zcd if D is specified (RV32 only)
   ZExt[RVM_ZEXT_CA] = true;
   ZExt[RVM_ZEXT_CF] = true;
@@ -294,20 +274,21 @@ TEST(RISCVModelUnitTest, CompressedSubset) {
   Ext.MisaExt[RVM_MISA_F] = true;
   Ext.MisaExt[RVM_MISA_D] = true;
   Isa = rvm::create_isa_string(Ext, /*IsRV64*/ false, /*Lowercase*/ true);
-  EXPECT_NE(Isa.find("rv32ifdc"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("rv32ifdc"));
   // - Zca, Zcd if D is specified (RV64 only)
   ZExt[RVM_ZEXT_CA] = true;
   ZExt[RVM_ZEXT_CD] = true;
   Ext.MisaExt[RVM_MISA_F] = true;
   Ext.MisaExt[RVM_MISA_D] = true;
   Isa = rvm::create_isa_string(Ext, /*IsRV64*/ true, /*Lowercase*/ true);
-  EXPECT_NE(Isa.find("rv64ifdc"), std::string::npos);
+  EXPECT_THAT(Isa, HasSubstr("rv64ifdc"));
 }
 
 struct ParseIsaParam final {
   std::string_view ISA;
   std::vector<RVMMisaExt> Misa;
   std::vector<RVMZExt> ZExt;
+  std::vector<RVMSExt> SExt;
   std::vector<RVMXExt> XExt;
   bool IsRV64;
 };
@@ -330,16 +311,20 @@ class ParseIsaTest : public testing::TestWithParam<ParseIsaParam> {};
 #define CHECK_XEXT(NAME, name)                                                 \
   EXPECT_EQ(Res.XExt[NAME], Ref.XExt[NAME])                                    \
       << "Mismatch in custom extension \"x" #name "\"";
+#define CHECK_SEXT(NAME, name)                                                 \
+  EXPECT_EQ(Res.SExt[NAME], Ref.SExt[NAME])                                    \
+      << "Mismatch in standard extension \"s" #name "\"";
 
 INSTANTIATE_TEST_SUITE_P(
     IsaStrings, ParseIsaTest,
     testing::Values(
-        ParseIsaParam{"rv64i", {RVM_MISA_I}, {}, {}, /*IsRV64*/ true},
-        ParseIsaParam{"rv32i", {RVM_MISA_I}, {}, {}, /*IsRV64*/ false},
-        ParseIsaParam{"rv32e", {RVM_MISA_E}, {}, {}, /*IsRV64*/ false},
+        ParseIsaParam{"rv64i", {RVM_MISA_I}, {}, {}, {}, /*IsRV64*/ true},
+        ParseIsaParam{"rv32i", {RVM_MISA_I}, {}, {}, {}, /*IsRV64*/ false},
+        ParseIsaParam{"rv32e", {RVM_MISA_E}, {}, {}, {}, /*IsRV64*/ false},
         ParseIsaParam{
             "rv64imafd",
             {RVM_MISA_I, RVM_MISA_M, RVM_MISA_A, RVM_MISA_F, RVM_MISA_D},
+            {},
             {},
             {},
             /*IsRV64*/ true},
@@ -348,33 +333,52 @@ INSTANTIATE_TEST_SUITE_P(
                        RVM_MISA_D, RVM_MISA_C},
                       {RVM_ZEXT_ICSR, RVM_ZEXT_IFENCEI},
                       {},
+                      {},
                       /*IsRV64*/ true},
         ParseIsaParam{"rv64imzba_zbb",
                       {RVM_MISA_I, RVM_MISA_M},
                       {RVM_ZEXT_BB, RVM_ZEXT_BA},
+                      {},
                       {},
                       /*IsRV64*/ true},
         ParseIsaParam{"rv64im_zba_zbb",
                       {RVM_MISA_I, RVM_MISA_M},
                       {RVM_ZEXT_BB, RVM_ZEXT_BA},
                       {},
+                      {},
                       /*IsRV64*/ true},
         ParseIsaParam{"rv64imzbb_xempty",
                       {RVM_MISA_I, RVM_MISA_M},
                       {RVM_ZEXT_BB},
+                      {},
                       {RVM_XEXT_EMPTY},
                       /*IsRV64*/ true},
         ParseIsaParam{"RV64IMAZbb_Zicsr_Xempty",
                       {RVM_MISA_I, RVM_MISA_M, RVM_MISA_A},
                       {RVM_ZEXT_BB, RVM_ZEXT_ICSR},
+                      {},
                       {RVM_XEXT_EMPTY},
                       /*IsRV64*/ true},
         ParseIsaParam{
             "rv32imfdvxempty",
             {RVM_MISA_I, RVM_MISA_M, RVM_MISA_F, RVM_MISA_D, RVM_MISA_V},
             {},
+            {},
             {RVM_XEXT_EMPTY},
-            /*IsRV64*/ false}
+            /*IsRV64*/ false},
+        ParseIsaParam{"rv64imafdc_sstc_svade",
+                      {RVM_MISA_I, RVM_MISA_M, RVM_MISA_A, RVM_MISA_F,
+                       RVM_MISA_D, RVM_MISA_C},
+                      {},
+                      {RVM_SEXT_STC, RVM_SEXT_VADE},
+                      {},
+                      /*IsRV64*/ true},
+        ParseIsaParam{"rv64im_sstc_svpbmt",
+                      {RVM_MISA_I, RVM_MISA_M},
+                      {},
+                      {RVM_SEXT_STC, RVM_SEXT_VPBMT},
+                      {},
+                      /*IsRV64*/ true}
 
         ),
     ParseIsaTestNameGenerator());
@@ -383,29 +387,30 @@ TEST_P(ParseIsaTest, SimplyParse) {
   auto &&Param = GetParam();
   auto [Res, IsRV64] = parse_isa_string(Param.ISA);
   EXPECT_EQ(IsRV64, Param.IsRV64);
-  RVMExtDescriptor Ref = {};
-  Ref.ZExtSize = sizeof(Ref.ZExt);
-  Ref.XExtSize = sizeof(Ref.XExt);
+  RVMExtDescriptor Ref = RVM_INIT_EXT_DESCRIPTOR;
   for (auto E : Param.Misa)
     Ref.MisaExt[E] = 1;
   for (auto E : Param.ZExt)
     Ref.ZExt[E] = 1;
+  for (auto E : Param.SExt)
+    Ref.SExt[E] = 1;
   for (auto E : Param.XExt)
     Ref.XExt[E] = 1;
   RVM_FOR_EACH_MISA_EXT(CHECK_MISA)
   RVM_FOR_EACH_ZEXT(CHECK_ZEXT)
   RVM_FOR_EACH_XEXT(CHECK_XEXT)
+  RVM_FOR_EACH_SEXT(CHECK_SEXT)
 }
 
 TEST_P(ParseIsaTest, ParseAndSerialize) {
   auto &&Param = GetParam();
-  RVMExtDescriptor Ref = {};
-  Ref.ZExtSize = sizeof(Ref.ZExt);
-  Ref.XExtSize = sizeof(Ref.XExt);
+  RVMExtDescriptor Ref = RVM_INIT_EXT_DESCRIPTOR;
   for (auto E : Param.Misa)
     Ref.MisaExt[E] = 1;
   for (auto E : Param.ZExt)
     Ref.ZExt[E] = 1;
+  for (auto E : Param.SExt)
+    Ref.SExt[E] = 1;
   for (auto E : Param.XExt)
     Ref.XExt[E] = 1;
   auto Isa1 = rvm::create_isa_string(Ref, Param.IsRV64, /*lowercase*/ true);
@@ -433,7 +438,8 @@ INSTANTIATE_TEST_SUITE_P(
         InvalidISAParam{"rv256",
                         "only 32 and 64-bit architectures are supported"},
         InvalidISAParam{"rv32_",
-                        "extension should have 'z' or 'x' after an underscore"},
+                        "extension should have 's', 'z' or 'x' after an "
+                        "underscore"},
         InvalidISAParam{"rv32m", "either E or I should be available"},
         InvalidISAParam{
             "rv32imznonexisting",
