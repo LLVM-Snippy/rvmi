@@ -305,7 +305,7 @@ inline unsigned parse_isa_bitness(std::string_view Str) {
 // Split extensions on underscore
 inline std::vector<std::string_view> split_extensions(std::string_view Isa) {
   std::vector<std::string_view> Extensions;
-  assert(Isa[0] == '_' || Isa[0] == 'z' || Isa[0] == 'x');
+  assert(Isa[0] == '_' || Isa[0] == 'z' || Isa[0] == 'x' || Isa[0] == 's');
   size_t Current = Isa[0] == '_';
   auto NextUnderscore = Isa.find('_', Current + 1);
   while (NextUnderscore != Isa.npos) {
@@ -352,6 +352,15 @@ inline std::vector<std::string_view> split_extensions(std::string_view Isa) {
     Ext.XExt[NAME] = 1;                                                        \
   else
 #endif
+
+#ifdef RVM_ADD_SEXT_BITS
+#error RVM_ADD_SEXT_BITS should not be defined at this point
+#else
+#define RVM_ADD_SEXT_BITS(NAME, name)                                          \
+  if (E.substr(1) == #name)                                                    \
+    Ext.SExt[NAME] = 1;                                                        \
+  else
+#endif
 inline std::pair<RVMExtDescriptor, bool>
 parse_isa_string(std::string_view InputIsa) {
   constexpr static std::string_view IsaPrefix = "rv";
@@ -374,11 +383,9 @@ parse_isa_string(std::string_view InputIsa) {
   }
   Isa.remove_prefix(FirstExtPos);
 
-  RVMExtDescriptor Ext = {};
-  Ext.ZExtSize = sizeof(Ext.ZExt);
-  Ext.XExtSize = sizeof(Ext.XExt);
+  RVMExtDescriptor Ext = RVM_INIT_EXT_DESCRIPTOR;
 
-  auto FirstStandard = Isa.find_first_of("_zx");
+  auto FirstStandard = Isa.find_first_of("_zxs");
   auto MaxMisa = FirstStandard == Isa.npos ? Isa.size() : FirstStandard;
   // parse all single-letter extensions
   for (auto i = 0u; i < MaxMisa; ++i) {
@@ -395,13 +402,18 @@ parse_isa_string(std::string_view InputIsa) {
         RVM_FOR_EACH_ZEXT(RVM_ADD_ZEXT_BITS)
         throw invalid_isa_string(InputIsa, "unknown standard extension \"" +
                                                std::string(E) + "\" specified");
+      } else if (E[0] == 's') {
+        RVM_FOR_EACH_SEXT(RVM_ADD_SEXT_BITS)
+        throw invalid_isa_string(InputIsa, "unknown standard extension \"" +
+                                               std::string(E) + "\" specified");
       } else if (E[0] == 'x') {
         RVM_FOR_EACH_XEXT(RVM_ADD_XEXT_BITS)
         throw invalid_isa_string(InputIsa, "unknown custom extension \"" +
                                                std::string(E) + "\" specified");
       } else {
         throw invalid_isa_string(
-            InputIsa, "extension should have 'z' or 'x' after an underscore");
+            InputIsa,
+            "extension should have 's', 'z' or 'x' after an underscore");
       }
     }
   }
@@ -413,4 +425,5 @@ parse_isa_string(std::string_view InputIsa) {
 #undef RVM_ADD_MISA_BITS_CASE
 #undef RVM_ADD_ZEXT_BITS
 #undef RVM_ADD_XEXT_BITS
+#undef RVM_ADD_SEXT_BITS
 

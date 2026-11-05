@@ -95,12 +95,12 @@ Builder.setRV64Isa();
 
 RVM represents ISA extensions using @ref RVMExtDescriptor.
 
-Before using the descriptor, initialize the ABI compatibility fields:
+Use the @ref RVM_INIT_EXT_DESCRIPTOR macro to create a descriptor with the
+ABI compatibility size fields already set to the number of extensions known to
+the RVM interface version the header was built against:
 
 @code{.cpp}
-RVMExtDescriptor Exts = {};
-Exts.ZExtSize = sizeof(Exts.ZExt);
-Exts.XExtSize = sizeof(Exts.XExt);
+RVMExtDescriptor Exts = RVM_INIT_EXT_DESCRIPTOR;
 @endcode
 
 ## Single-letter extensions

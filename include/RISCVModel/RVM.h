@@ -16,7 +16,7 @@ extern "C" {
 
 #define RVMAPI_ENTRY_POINT_SYMBOL RVMVTable
 #define RVMAPI_VERSION_SYMBOL RVMInterfaceVersion
-#define RVMAPI_CURRENT_INTERFACE_VERSION 36u
+#define RVMAPI_CURRENT_INTERFACE_VERSION 38u
 #if defined(__has_c_attribute)
 #if __has_c_attribute(nodiscard)
 #define RVM_NODISCARD [[nodiscard]]
@@ -200,6 +200,77 @@ typedef enum {
   RVM_FOR_EACH_ZEXT(RVM_DEFINE_ENUM_CASE) RVM_ZEXT_NUMBER
 } RVMZExt;
 
+#ifdef RVM_FOR_EACH_SEXT
+#error RVM_FOR_EACH_SEXT should not be defined at this point
+#else
+/** @brief Standard privileged ("S") extension list
+ *
+ * Only append to this list to keep ABI compatible when new extensions are
+ * added.
+ *
+ * The naming follows the RISC-V "S" category convention: both the macro name
+ * and the second argument are derived from the extension name with the leading
+ * "S" dropped. The second argument is the extension name without the leading
+ * "S" and the macro name is that string uppercased.
+ */
+#define RVM_FOR_EACH_SEXT(MACRO)                                               \
+  MACRO(RVM_SEXT_SCCPTR, sccptr)                                               \
+  MACRO(RVM_SEXT_SCOFPMF, scofpmf)                                             \
+  MACRO(RVM_SEXT_SCOUNTERENW, scounterenw)                                     \
+  MACRO(RVM_SEXT_HA, ha)                                                       \
+  MACRO(RVM_SEXT_HCOUNTERENW, hcounterenw)                                     \
+  MACRO(RVM_SEXT_HGATPA, hgatpa)                                               \
+  MACRO(RVM_SEXT_HTVALA, htvala)                                               \
+  MACRO(RVM_SEXT_HVSATPA, hvsatpa)                                             \
+  MACRO(RVM_SEXT_HVSTVALA, hvstvala)                                           \
+  MACRO(RVM_SEXT_HVSTVECD, hvstvecd)                                           \
+  MACRO(RVM_SEXT_STC, stc)                                                     \
+  MACRO(RVM_SEXT_STVALA, stvala)                                               \
+  MACRO(RVM_SEXT_STVECD, stvecd)                                               \
+  MACRO(RVM_SEXT_VADE, vade)                                                   \
+  MACRO(RVM_SEXT_VADU, vadu)                                                   \
+  MACRO(RVM_SEXT_VINVAL, vinval)                                               \
+  MACRO(RVM_SEXT_VRSW60T59B, vrsw60t59b)                                       \
+  MACRO(RVM_SEXT_VNAPOT, vnapot)                                               \
+  MACRO(RVM_SEXT_VUKTE, vukte)                                                 \
+  MACRO(RVM_SEXT_MCNTRPMF, mcntrpmf)                                           \
+  MACRO(RVM_SEXT_VBARE, vbare)                                                 \
+  MACRO(RVM_SEXT_V32, v32)                                                     \
+  MACRO(RVM_SEXT_V39, v39)                                                     \
+  MACRO(RVM_SEXT_V48, v48)                                                     \
+  MACRO(RVM_SEXT_V57, v57)                                                     \
+  MACRO(RVM_SEXT_MSTATEEN, mstateen)                                           \
+  MACRO(RVM_SEXT_SSTATEEN, sstateen)                                           \
+  MACRO(RVM_SEXT_SQOSID, sqosid)                                               \
+  MACRO(RVM_SEXT_VPBMT, vpbmt)                                                 \
+  MACRO(RVM_SEXT_VVPTC, vvptc)                                                 \
+  MACRO(RVM_SEXT_SU64XL, su64xl)                                               \
+  MACRO(RVM_SEXT_SSTRICT, sstrict)                                             \
+  MACRO(RVM_SEXT_MEPMP, mepmp)                                                 \
+  MACRO(RVM_SEXT_MPMPDELEG, mpmpdeleg)                                         \
+  MACRO(RVM_SEXT_SPMP, spmp)                                                   \
+  MACRO(RVM_SEXT_SPMPEN, spmpen)                                               \
+  MACRO(RVM_SEXT_MPMPMT, mpmpmt)                                               \
+  MACRO(RVM_SEXT_MRNMI, mrnmi)                                                 \
+  MACRO(RVM_SEXT_MCSRIND, mcsrind)                                             \
+  MACRO(RVM_SEXT_SCSRIND, scsrind)                                             \
+  MACRO(RVM_SEXT_MCDELEG, mcdeleg)                                             \
+  MACRO(RVM_SEXT_SCCFG, sccfg)                                                 \
+  MACRO(RVM_SEXT_MMPM, mmpm)                                                   \
+  MACRO(RVM_SEXT_MNPM, mnpm)                                                   \
+  MACRO(RVM_SEXT_SNPM, snpm)                                                   \
+  MACRO(RVM_SEXT_SPM, spm)                                                     \
+  MACRO(RVM_SEXT_UPM, upm)                                                     \
+  MACRO(RVM_SEXT_SDBLTRP, sdbltrp)                                             \
+  MACRO(RVM_SEXT_MDBLTRP, mdbltrp)                                             \
+  MACRO(RVM_SEXT_MAIA, maia)                                                   \
+  MACRO(RVM_SEXT_SAIA, saia)
+#endif
+
+typedef enum {
+  RVM_FOR_EACH_SEXT(RVM_DEFINE_ENUM_CASE) RVM_SEXT_NUMBER
+} RVMSExt;
+
 #ifdef RVM_FOR_EACH_XEXT
 #error RVM_FOR_EACH_XEXT should not be defined at this point
 #else
@@ -219,10 +290,12 @@ typedef enum {
 
 #define RVM_ZEXT_MAX 512
 #define RVM_XEXT_MAX 128
+#define RVM_SEXT_MAX 256
 
 #ifdef __cplusplus
 static_assert(RVM_ZEXT_MAX > RVM_ZEXT_NUMBER);
 static_assert(RVM_XEXT_MAX > RVM_XEXT_NUMBER);
+static_assert(RVM_SEXT_MAX > RVM_SEXT_NUMBER);
 #endif // __cplusplus
 
 /** @brief Descriptor containing info about all extension
@@ -238,16 +311,29 @@ static_assert(RVM_XEXT_MAX > RVM_XEXT_NUMBER);
  *
  */
 typedef struct RVMExtDescriptor {
-  /** This field is used to check for ABI compatibility
+  /** Number of Z extensions known to the initializer.
    *
-   * @attention Set this to sizeof(ZExt) on initialization
+   * This must be set to the number of extension entries the initializer
+   * guarantees to be valid, i.e. the highest valid ZExt index plus one for the
+   * RVM interface version the initializer was built against (normally @ref
+   * RVM_ZEXT_NUMBER). Entries with index greater than or equal to this value
+   * are treated as if they were zero (not enabled). This allows an older
+   * plugin to interoperate with a newer model that understands more extensions
+   * and vice versa.
+   *
+   * @attention Set this to RVM_ZEXT_NUMBER on initialization
    */
   size_t ZExtSize;
-  /** This field is used to check for ABI compatibility
+  /** Number of X extensions known to the initializer.
    *
-   * @attention Set this to sizeof(XExt) on initialization
+   * @attention Set this to RVM_XEXT_NUMBER on initialization
    */
   size_t XExtSize;
+  /** Number of S extensions known to the initializer.
+   *
+   * @attention Set this to RVM_SEXT_NUMBER on initialization
+   */
+  size_t SExtSize;
   /** Standard single-letter extensions (e.g. "M" or "F")
    *
    * To enable extension "M" set according element to non-zero.
@@ -264,6 +350,15 @@ typedef struct RVMExtDescriptor {
    * Exts.ZExt[RVM_ZEXT_] = 1;
    */
   char ZExt[RVM_ZEXT_MAX];
+  /** Standard privileged multi-letter extensions (e.g. "sstc" or "svade")
+   *
+   * For example:
+   *
+   * To enable extension "Sstc" set according element to non-zero:
+   *
+   * Exts.SExt[RVM_SEXT_STC] = 1;
+   */
+  char SExt[RVM_SEXT_MAX];
   /** Custom extensions
    *
    * For example:
@@ -274,6 +369,25 @@ typedef struct RVMExtDescriptor {
    */
   char XExt[RVM_XEXT_MAX];
 } RVMExtDescriptor;
+
+/** @brief Creates zero-initialized extension descriptor with size fields set
+ * to the number of extensions known to the RVM interface version this header
+ * was built against.
+ *
+ * This is an aggregate struct initializer macro, use it like a regular struct
+ * initializer:
+ *
+ * @code{.c}
+ * RVMExtDescriptor Exts = RVM_INIT_EXT_DESCRIPTOR;
+ * @endcode
+ *
+ * After initialization the extension arrays can be enabled as usual, e.g.
+ * `Exts.MisaExt[RVM_MISA_M] = 1;`.
+ */
+#define RVM_INIT_EXT_DESCRIPTOR                                                \
+  {                                                                            \
+    RVM_ZEXT_NUMBER, RVM_XEXT_NUMBER, RVM_SEXT_NUMBER, {}, {}, {}, {}          \
+  }
 
 /** @brief Offsets of specific bit fields in XSTATUS CSR */
 typedef enum {
@@ -358,8 +472,14 @@ void rvm_getErrorContext(const RVMState *State, char *Buf, size_t *BufSize);
  * - @ref RVM_ERRC_SUCCESS on success.
  * - @ref RVM_ERRC_INVALID_ARGUMENT if MemoryRegions pointer is NULL
  * - @ref RVM_ERRC_INVALID_MEM_REGION if any memory regions was invalid
- * - @ref RVM_ERRC_INCOMPATIBLE if ZExtSize of XExtSize are not equal to
- * sizeof(ZExt) and sizeof(XExt) respectively
+ * - @ref RVM_ERRC_INCOMPATIBLE if ZExtSize, XExtSize or SExtSize exceed the
+ * number of extensions the model supports (i.e. are larger than
+ * RVM_ZEXT_NUMBER, RVM_XEXT_NUMBER and RVM_SEXT_NUMBER respectively), but
+ * only when an extension beyond the supported ones is actually enabled (i.e.
+ * if the corresponding entry in ZExt, XExt or SExt is non-zero). Entries at
+ * index greater than or equal to the size fields are treated as "not
+ * enabled", so a larger size from a newer plugin only errors out if it also
+ * enables an unsupported extension.
  *
  * @param config Model configuration to build with
  *

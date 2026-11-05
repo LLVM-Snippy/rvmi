@@ -32,10 +32,13 @@ inline RVMExtDescriptor normalize_extensions(const RVMExtDescriptor &Ext,
   RVMExtDescriptor Norm;
   Norm.XExtSize = Ext.XExtSize;
   Norm.ZExtSize = Ext.ZExtSize;
+  Norm.SExtSize = Ext.SExtSize;
   std::copy(std::begin(Ext.ZExt), std::end(Ext.ZExt), Norm.ZExt);
   std::copy(std::begin(Ext.XExt), std::end(Ext.XExt), Norm.XExt);
+  std::copy(std::begin(Ext.SExt), std::end(Ext.SExt), Norm.SExt);
   std::copy(std::begin(Ext.MisaExt), std::end(Ext.MisaExt), Norm.MisaExt);
   auto &ZExt = Norm.ZExt;
+  auto &SExt = Norm.SExt;
 
   // MISA extensions
   auto &MisaExt = Norm.MisaExt;
@@ -119,6 +122,18 @@ inline RVMExtDescriptor normalize_extensions(const RVMExtDescriptor &Ext,
     ZExt[RVM_ZEXT_VKG] = true;
     ZExt[RVM_ZEXT_VKSG] = false;
   }
+  // The augmented hypervisor extension.
+  if (SExt[RVM_SEXT_HA]) {
+    MisaExt[RVM_MISA_H] = true;
+    SExt[RVM_SEXT_SSTATEEN] = true;
+    SExt[RVM_SEXT_HCOUNTERENW] = true;
+    SExt[RVM_SEXT_HVSTVALA] = true;
+    SExt[RVM_SEXT_HTVALA] = true;
+    SExt[RVM_SEXT_HVSTVECD] = true;
+    SExt[RVM_SEXT_HVSATPA] = true;
+    SExt[RVM_SEXT_HGATPA] = true;
+    SExt[RVM_SEXT_HA] = false;
+  }
   // Zc* v1.0.4-2 spec 1.5
   // MISA.C is set if the following extensions are selected:
   // - Zca and not F
@@ -160,7 +175,7 @@ inline void add_misa(std::ostream &OS, const RVMExtDescriptor &Ext) {
 #error RVM_RVM_ADD_ZEXT_BITS_STRING_CASE should not be defined at this point
 #else
 #define RVM_RVM_ADD_ZEXT_BITS_STRING_CASE(NAME, name)                          \
-  if (ZExt[NAME])                                                              \
+  if (NAME < Ext.ZExtSize && ZExt[NAME])                                       \
     OS << "_Z" << #name;
 #endif
 /// @endcond
@@ -172,11 +187,27 @@ inline void add_standard_extensions(std::ostream &OS,
 #undef RVM_RVM_ADD_ZEXT_BITS_STRING_CASE
 
 /// @cond
+#ifdef RVM_RVM_ADD_SEXT_BITS_STRING_CASE
+#error RVM_RVM_ADD_SEXT_BITS_STRING_CASE should not be defined at this point
+#else
+#define RVM_RVM_ADD_SEXT_BITS_STRING_CASE(NAME, name)                          \
+  if (NAME < Ext.SExtSize && SExt[NAME])                                       \
+    OS << "_S" << #name;
+#endif
+/// @endcond
+inline void add_privileged_extensions(std::ostream &OS,
+                                      const RVMExtDescriptor &Ext) {
+  auto &SExt = Ext.SExt;
+  RVM_FOR_EACH_SEXT(RVM_RVM_ADD_SEXT_BITS_STRING_CASE);
+}
+#undef RVM_RVM_ADD_SEXT_BITS_STRING_CASE
+
+/// @cond
 #ifdef RVM_RVM_ADD_XEXT_BITS_STRING_CASE
 #error RVM_RVM_ADD_XEXT_BITS_STRING_CASE should not be defined at this point
 #else
 #define RVM_RVM_ADD_XEXT_BITS_STRING_CASE(NAME, name)                          \
-  if (XExt[NAME])                                                              \
+  if (NAME < Ext.XExtSize && XExt[NAME])                                       \
     OS << "_X" << #name;
 #endif
 /// @endcond
@@ -200,13 +231,28 @@ inline void add_custom_extensions(std::ostream &OS,
  */
 inline std::string create_isa_string(const RVMExtDescriptor &Ext, bool RV64,
                                      bool Lowercase = false) {
-  assert(sizeof(Ext.ZExt) == Ext.ZExtSize);
-  assert(sizeof(Ext.XExt) == Ext.XExtSize);
+  assert(Ext.ZExtSize <= sizeof(Ext.ZExt));
+  assert(Ext.XExtSize <= sizeof(Ext.XExt));
+  assert(Ext.SExtSize <= sizeof(Ext.SExt));
   auto Norm = detail::normalize_extensions(Ext, RV64);
   std::stringstream SS;
   SS << (RV64 ? "RV64" : "RV32");
+  // These are reserved for use in the isa string as prefixed for multi-letter
+  // extensions.
+  Norm.MisaExt[RVM_MISA_S] = 0;
+  Norm.MisaExt[RVM_MISA_X] = 0;
+  Norm.MisaExt[RVM_MISA_Z] = 0;
   detail::add_misa(SS, Norm);
   detail::add_standard_extensions(SS, Norm);
+  // Inexplicably, MMU-related extensions are never really included in the
+  // isa-string and passed through out-of-band.
+  Norm.SExt[RVM_SEXT_VBARE] = 0;
+  Norm.SExt[RVM_SEXT_V32] = 0;
+  Norm.SExt[RVM_SEXT_V39] = 0;
+  Norm.SExt[RVM_SEXT_V48] = 0;
+  Norm.SExt[RVM_SEXT_V57] = 0;
+  Norm.SExt[RVM_SEXT_VRSW60T59B] = 0;
+  detail::add_privileged_extensions(SS, Norm);
   detail::add_custom_extensions(SS, Norm);
   auto Isa = SS.str();
   auto FirstUnderscore = std::find(Isa.begin(), Isa.end(), '_');
@@ -340,10 +386,13 @@ public:
                 Config.Extensions.ZExt);
       std::copy(std::begin(Ext.XExt), std::end(Ext.XExt),
                 Config.Extensions.XExt);
+      std::copy(std::begin(Ext.SExt), std::end(Ext.SExt),
+                Config.Extensions.SExt);
       std::copy(std::begin(Ext.MisaExt), std::end(Ext.MisaExt),
                 Config.Extensions.MisaExt);
       Config.Extensions.ZExtSize = Ext.ZExtSize;
       Config.Extensions.XExtSize = Ext.XExtSize;
+      Config.Extensions.SExtSize = Ext.SExtSize;
       return *this;
     }
 

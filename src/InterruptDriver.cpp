@@ -21,9 +21,7 @@ int main(int argc, char *argv[]) try {
   ExecutionLogger ExecLog(Options.JsonExecLog);
 
   bool IsRV64 = true;
-  RVMExtDescriptor Exts = {};
-  Exts.ZExtSize = sizeof(Exts.ZExt);
-  Exts.XExtSize = sizeof(Exts.XExt);
+  RVMExtDescriptor Exts = RVM_INIT_EXT_DESCRIPTOR;
 
   if (!Options.RVM_IsaStringOverride.empty()) {
     std::tie(Exts, IsRV64) = parse_isa_string(Options.RVM_IsaStringOverride);
@@ -35,10 +33,15 @@ int main(int argc, char *argv[]) try {
     Exts.MisaExt[RVM_MISA_F] = true;
     Exts.MisaExt[RVM_MISA_D] = true;
     Exts.MisaExt[RVM_MISA_V] = true;
-    Exts.ZExtSize = sizeof(Exts.ZExt);
-    Exts.XExtSize = sizeof(Exts.XExt);
     Exts.ZExt[RVM_ZEXT_ICSR] = true;
   }
+  // Backwards compatibility. Model implementations usually always enabled S
+  // with an mmu.
+  Exts.MisaExt[RVM_MISA_S] = true;
+  Exts.SExt[RVM_SEXT_V32] = !IsRV64;
+  Exts.SExt[RVM_SEXT_V39] = IsRV64;
+  Exts.SExt[RVM_SEXT_V48] = IsRV64;
+  Exts.SExt[RVM_SEXT_V57] = IsRV64;
   auto Builder = rvm::State::Builder(&VTable);
   Builder
       .addMemoryRegion(Options.RVM_MemoryRomStart, Options.RVM_MemoryRomSize,
